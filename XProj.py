@@ -37,7 +37,7 @@ def get_unpacked_refs() -> list[str]:
     # local (boolean) – When true skip linked library paths.
     return remove_empty(remove_duplication(bpy.utils.blend_paths(absolute=False, packed=True, local=False)))
 
-def get_unpacked_libs():
+def get_unpacked_libs() -> list[str]:
 
     unpacked_libs = []
 
@@ -49,17 +49,13 @@ def get_unpacked_libs():
 
     return unpacked_libs
 
-def get_non_relative_paths(src_list : list[str]):
-    new_list = []
+def is_abs_path(filepath : str) -> bool:
+    return (filepath.find(":") >= 0) is True
 
-    for element in src_list:
-        if element.find(":") >= 0:
-            new_list.append(element)
+def is_relative_path(filepath : str) -> bool:
+    return filepath.startswith("//") is True
 
-    return new_list
-
-def get_current_filepath():
-
+def get_current_filepath() -> str:
     return normalize_slashes(bpy.context.blend_data.filepath)
 
 def normalize_slashes(path : str) -> str:
@@ -107,16 +103,19 @@ def get_path_rel_to_dir(dir : str, file : str) -> tuple[bool, str]:
 def get_path_rel_to_proj(file : str) -> tuple[bool, str]:
     return get_path_rel_to_dir(get_abs_src_proj_dir(), file)
  
-def get_abs_path(pathRelToCurrentFile : str) -> str:
+def get_abs_path(path : str) -> str:
 
-    if pathRelToCurrentFile.startswith("//"):
-         # bpy.path.abspath() is not good enough, 
+    if path.startswith("//"):
+        # bpy.path.abspath() is not good enough, 
         # some times it returns path with ../ in it
         # so os.path.abspath() is used to solve that
-        #return normalize_slashes(bpy.path.abspath(pathRelToCurrentFile))
-        return normalize_slashes(os.path.abspath(bpy.path.abspath(pathRelToCurrentFile)))
+        #return normalize_slashes(bpy.path.abspath(path))
+        return normalize_slashes(os.path.abspath(bpy.path.abspath(path)))
     else:
-        return normalize_slashes(pathRelToCurrentFile)
+        return normalize_slashes(path)
+
+def is_file(path : str) -> bool:
+    return os.path.isfile(get_abs_path(path))
 
 def get_abs_src_proj_dir() -> str:
     return normalize_dir_path(get_abs_path(bpy.context.scene.XProjProps.src_proj_dir))
@@ -124,7 +123,7 @@ def get_abs_src_proj_dir() -> str:
 def get_abs_target_proj_dir() -> str:
     return get_abs_path(bpy.context.scene.XProjProps.target_proj_dir)
 
-def get_files_to_copy() -> list[str]:
+def get_abs_filepaths_to_copy() -> list[str]:
 
     paths = get_unpacked_refs()
 
@@ -145,10 +144,12 @@ def ensure_dir(filepath : str):
 
     return
 
+
+
 # 按钮
-class XReportUnpackedRefsOp(bpy.types.Operator):
-    bl_idname = "xutil.report_unpacked_refs"
-    bl_label = "Report Unpacked Refs"
+class XCheckUnpackedRefsOp(bpy.types.Operator):
+    bl_idname = "xutil.check_unpacked_refs"
+    bl_label = "Check Unpacked Refs"
 
     @classmethod
     def poll(cls, context):
@@ -158,15 +159,19 @@ class XReportUnpackedRefsOp(bpy.types.Operator):
 
         unpackedRefs = get_unpacked_refs()
 
-        for ref in unpackedRefs:
-            self.report({"INFO"}, "Unpacked Ref: " + ref)
+        for filepath in unpackedRefs:
+            self.report({"INFO"}, "Unpacked Ref: " + filepath)
+            if is_abs_path(filepath):
+                self.report({"WARNING"}, "File with abs path won't be copied")
+            if is_file(filepath) is not True:
+                self.report({"WARNING"}, "File not exist")
 
         return {'FINISHED'}
 
 # 按钮
-class XReportUnpackedLibsOp(bpy.types.Operator):
-    bl_idname = "xutil.report_unpacked_libs"
-    bl_label = "Report Unpacked Libs"
+class XCheckUnpackedLibsOp(bpy.types.Operator):
+    bl_idname = "xutil.check_unpacked_libs"
+    bl_label = "Check Unpacked Libs"
 
     @classmethod
     def poll(cls, context):
@@ -176,26 +181,12 @@ class XReportUnpackedLibsOp(bpy.types.Operator):
 
         unpackedLibs = get_unpacked_libs()
 
-        for lib in unpackedLibs:
-            self.report({"INFO"}, "Unpacked Lib: " + lib)
-
-        return {'FINISHED'}
-
-# 按钮
-class XProjCopyCheckOp(bpy.types.Operator):
-    bl_idname = "xutil.proj_copy_check"
-    bl_label = "Report Unpacked Libs"
-
-    @classmethod
-    def poll(cls, context):
-        return True
-
-    def execute(self, context):
-
-        nonRelatives = get_non_relative_paths(get_unpacked_refs())
-
-        for nr in nonRelatives:
-            self.report({"WARNING"}, "NON RELATIVE: " + nr)
+        for filepath in unpackedLibs:
+            self.report({"INFO"}, "Unpacked Ref: " + filepath)
+            if is_abs_path(filepath):
+                self.report({"WARNING"}, "File with abs path won't be copied")
+            if is_file(filepath) is not True:
+                self.report({"WARNING"}, "File not exist")
 
         return {'FINISHED'}
 
@@ -211,11 +202,11 @@ class XProjCopyOp(bpy.types.Operator):
 
     def execute(self, context):
 
-        files_to_copy = get_files_to_copy()
+        files_to_copy = get_abs_filepaths_to_copy()
 
         for filepath in files_to_copy:
 
-            if os.path.isfile(filepath) is not True:
+            if is_file(filepath) is not True:
                 self.report({"WARNING"}, "File Not Exist: " + filepath)
                 continue
 
@@ -245,10 +236,10 @@ class XProjPanel(bpy.types.Panel):
 
         props = bpy.context.scene.XProjProps
 
-        box = self.layout.box()
-
-        row = box.row()
+        row = self.layout.row()
         row.label(text="Proj Dir")
+
+        box = self.layout.box()
 
         row = box.row()
         row.prop(props, "src_proj_dir", text="Src Proj Dir")
@@ -269,33 +260,32 @@ class XProjPanel(bpy.types.Panel):
         else:
             row.label(text="ERROR: current file is not in Src Proj Dir")
 
-
-    def draw(self, context):
+    def draw_check_section(self, context):
 
         props = bpy.context.scene.XProjProps
 
         row = self.layout.row()
-        row.label(text="Open Info window to see outputs!")
+        row.label(text="Check Refs")
 
         box = self.layout.box()
 
         row = box.row()
-        row.label(text="Report Refs")
+        row.label(text="Open info window to see outputs!")
 
         row = box.row()
-        row.operator("xutil.report_unpacked_refs", text="Report Unpacked Refs")
+        row.operator("xutil.check_unpacked_refs", text="Check Unpacked Refs")
 
         row = box.row()
-        row.operator("xutil.report_unpacked_libs", text="Report Unpacked Libs")
+        row.operator("xutil.check_unpacked_libs", text="Check Unpacked Libs (blender files)")
 
+    def draw_copy_section(self, context):
 
-        self.draw_proj_dir_section(context)
+        props = bpy.context.scene.XProjProps
 
-        
-        box = self.layout.box()
-
-        row = box.row()
+        row = self.layout.row()
         row.label(text="Copy")
+
+        box = self.layout.box()
 
         row = box.row()
         row.prop(props, "target_proj_dir", text="Target Proj Dir")
@@ -306,12 +296,20 @@ class XProjPanel(bpy.types.Panel):
         row = box.row()
         row.operator("xutil.proj_copy", text="Copy Project")
 
+    def draw(self, context):
+
+        self.draw_check_section(context)
+
+        self.draw_proj_dir_section(context)
+
+        self.draw_copy_section(context)
+
 
 # 模组初始化
 classes = (
     XProjProps,
-    XReportUnpackedRefsOp,
-    XReportUnpackedLibsOp,
+    XCheckUnpackedRefsOp,
+    XCheckUnpackedLibsOp,
     XProjCopyCheckOp,
     XProjCopyOp,
     XProjPanel,
