@@ -40,6 +40,26 @@ class XClearInfoWindowOp(bpy.types.Operator):
 
         return {'FINISHED'}
 
+# 按钮
+class XClearAllUnusedDataOp(bpy.types.Operator):
+    bl_idname = "xutil.clear_all_unused_data"
+    bl_label = ""
+
+    @classmethod
+    def poll(cls, context):
+        return True
+
+    def execute(self, context):
+
+        # this can't be used in window otherthan info window
+        # TODO how to override this context?
+
+        bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
+        bpy.ops.outliner.orphans_purge(do_local_ids=False, do_linked_ids=True, do_recursive=True)
+        bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=False, do_recursive=True)
+
+        return {'FINISHED'}
+
 # 面板
 class XMiscPanel(bpy.types.Panel):
     bl_label = "Misc"
@@ -55,8 +75,8 @@ class XMiscPanel(bpy.types.Panel):
         row = self.layout.row()
         row.operator("xutil.clear_system_console", text="Clear System Console")
 
-        #row = self.layout.row()
-        #row.operator("xutil.clear_info_window", text="Clear Info Window")
+        row = self.layout.row()
+        row.operator("xutil.clear_all_unused_data", text="Clear All Unused Data")
 
 
 
@@ -64,6 +84,7 @@ class XMiscPanel(bpy.types.Panel):
 classes = (
     XClearSystemConsoleOp,
     XClearInfoWindowOp,
+    XClearAllUnusedDataOp,
     XMiscPanel,
 )
 

@@ -161,6 +161,8 @@ class XCheckUnpackedRefsOp(bpy.types.Operator):
 
         for filepath in unpackedRefs:
             self.report({"INFO"}, "Unpacked Ref: " + filepath)
+            if filepath.endswith(".blend") is not True:
+                self.report({"WARNING"}, "You better pack this, other file linked to this file might not know this ref, when copying proj in that file, this ref won't be copied.")
             if is_abs_path(filepath):
                 self.report({"WARNING"}, "File with abs path won't be copied")
             if is_file(filepath) is not True:
@@ -310,7 +312,6 @@ classes = (
     XProjProps,
     XCheckUnpackedRefsOp,
     XCheckUnpackedLibsOp,
-    XProjCopyCheckOp,
     XProjCopyOp,
     XProjPanel,
 )
