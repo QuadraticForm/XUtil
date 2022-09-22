@@ -1,8 +1,6 @@
 from ast import Not
 import bpy
 from distutils import dist
-import math
-import copy
 
 class XAnimProps(bpy.types.PropertyGroup):
     timeScale: bpy.props.FloatProperty(default=1.0)

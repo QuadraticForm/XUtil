@@ -33,9 +33,9 @@ def remove_duplication(src_list):
 
 def get_unpacked_refs() -> list[str]:
 
-    # packed (boolean) – When true SKIP file paths for packed data.
+    # packed (boolean) – When true SKIP(??? maybe doc is wrong) file paths for packed data.
     # local (boolean) – When true skip linked library paths.
-    return remove_empty(remove_duplication(bpy.utils.blend_paths(absolute=False, packed=True, local=False)))
+    return remove_empty(remove_duplication(bpy.utils.blend_paths(absolute=False, packed=False, local=False)))
 
 def get_unpacked_libs() -> list[str]:
 
@@ -162,7 +162,7 @@ class XCheckUnpackedRefsOp(bpy.types.Operator):
         for filepath in unpackedRefs:
             self.report({"INFO"}, "Unpacked Ref: " + filepath)
             if filepath.endswith(".blend") is not True:
-                self.report({"WARNING"}, "You better pack this, other file linked to this file might not know this ref, when copying proj in that file, this ref won't be copied.")
+                self.report({"WARNING"}, "You better pack this") # TODO: check this: other file linked to this file might not know this ref, when copying proj in that file, this ref might not be copied.
             if is_abs_path(filepath):
                 self.report({"WARNING"}, "File with abs path won't be copied")
             if is_file(filepath) is not True:

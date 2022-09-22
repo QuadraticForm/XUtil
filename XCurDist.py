@@ -51,10 +51,8 @@ classes = (
 def initialize():
     for cls in classes:
         bpy.utils.register_class(cls)
-    #bpy.types.Scene.HairProps = bpy.props.PointerProperty(type=HairProps)
 
 
 def uninitialize():
     for cls in classes:
         bpy.utils.unregister_class(cls)
-    #del(bpy.types.Scene.HairProps)
