@@ -310,7 +310,6 @@ classes = (
     XProjProps,
     XCheckUnpackedRefsOp,
     XCheckUnpackedLibsOp,
-    XProjCopyCheckOp,
     XProjCopyOp,
     XProjPanel,
 )
