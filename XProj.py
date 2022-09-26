@@ -16,7 +16,7 @@ def remove_empty(src_list : list[str]) -> list[str]:
     new_list = []
 
     for element in src_list:
-        if len(element) > 0 or not element.startswith(" "):
+        if len(element) > 0:
             new_list.append(element)
 
     return new_list
@@ -162,7 +162,9 @@ class XCheckUnpackedRefsOp(bpy.types.Operator):
         for filepath in unpackedRefs:
             self.report({"INFO"}, "Unpacked Ref: " + filepath)
             if filepath.endswith(".blend") is not True:
-                self.report({"WARNING"}, "You better pack this") # TODO: check this: other file linked to this file might not know this ref, when copying proj in that file, this ref might not be copied.
+                # TODO: check this: if file A is linking this file, A might not know this ref, when copying proj in A, this ref might not be copied.
+                # check result 1: when using library override, A know this ref, but the path is wrong
+                self.report({"WARNING"}, "You better pack this, another file linking this file might get a wrong path") 
             if is_abs_path(filepath):
                 self.report({"WARNING"}, "File with abs path won't be copied")
             if is_file(filepath) is not True:
