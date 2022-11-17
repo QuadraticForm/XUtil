@@ -1,6 +1,11 @@
 from ast import Not
 import bpy
 from distutils import dist
+from . import XUtilCommon as xuc
+
+#
+# Anim
+#
 
 class XAnimProps(bpy.types.PropertyGroup):
     timeScale: bpy.props.FloatProperty(default=1.0)
@@ -72,12 +77,51 @@ class XAnimPanel(bpy.types.Panel):
         row.operator("xutil.anim_time_offset", text = "Offset Selected Keyframes")
 
 
+#
+# NLA
+#
+
+# 按钮
+class XDeleteNLATrackOp(bpy.types.Operator):
+    bl_idname = "xutil.delete_nla_track"
+    bl_label = "Delete NLA Track"
+
+    @classmethod
+    def poll(cls, context):
+        return True
+
+    def execute(self, context):
+
+        anim_data = bpy.context.active_object.animation_data
+
+        anim_data.nla_tracks.remove(anim_data.nla_tracks.active)
+
+        return {'FINISHED'}
+
+# NLA面板
+class XNLAPanel(bpy.types.Panel):
+    bl_label = "XNLA"
+    bl_space_type = 'NLA_EDITOR'
+    bl_region_type = 'UI'
+    bl_category = "XUtil"
+
+    def draw(self, context):
+
+        row = self.layout.row()
+
+        xuc.draw_btn(row, XDeleteNLATrackOp)
+
+#
 # 模组初始化
+#
+
 classes = (
     XAnimProps,
     XAnimTimeScaleOp,
     XAnimTimeOffsetOp,
     XAnimPanel,
+    XNLAPanel,
+    XDeleteNLATrackOp
 )
 
 def initialize():
