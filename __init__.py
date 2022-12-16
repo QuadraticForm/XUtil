@@ -10,7 +10,7 @@ import sys
 import importlib
 
 # 插件模组名（对应文件名）
-modulesNames = ['XCurDist', 'XTransform', 'XHair', 'XHairCvt', 'XCamera', 'XAnim', 'XProj', 'XMisc', 'XImageUser']
+modulesNames = ['XCurDist', 'XTransform', 'XHair', 'XHairCvt', 'XCamera', 'XAnim', 'XProj', 'XMisc', 'XImageUser', 'XUtilCommon']
 
 # 注册模组，基本不用改
  
