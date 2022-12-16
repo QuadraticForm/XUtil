@@ -1,8 +1,10 @@
 import bpy
 from distutils import dist
 import math
+import bmesh
 
 x_cur_dist = 0
+x_edge_length_sum = 0
 
 # 按钮
 class XCurDistButton(bpy.types.Operator):
@@ -15,13 +17,42 @@ class XCurDistButton(bpy.types.Operator):
 
     def execute(self, context):
 
-        global x_cur_dist
-
         obj_pos = bpy.context.active_object.matrix_world.translation
         cur_pos = bpy.context.scene.cursor.location
 
+        global x_cur_dist
         x_cur_dist = math.dist(obj_pos, cur_pos)
         print("Haha: "+ str(x_cur_dist))
+
+        return {'FINISHED'}        
+
+
+# 按钮
+class XEdgeLengthSumOp(bpy.types.Operator):
+    bl_idname = "xutil.edge_len_sum_op"
+    bl_label = "Sum selected edge length"
+
+    @classmethod
+    def poll(cls, context):
+        return len(context.selected_objects) > 0 and context.active_object.mode == 'EDIT'
+
+    def execute(self, context):
+
+        # Get the active mesh
+        me = bpy.context.object.data
+
+        # Get a BMesh representation
+        bm = bmesh.from_edit_mesh(me)
+
+        # sum
+        global x_edge_length_sum
+
+        x_edge_length_sum = 0
+        for e in bm.edges:
+            if e.select:
+                x_edge_length_sum += (e.verts[0].co - e.verts[1].co).magnitude
+    
+        bm.free()  # free and prevent further access
 
         return {'FINISHED'}        
 
@@ -40,11 +71,19 @@ class XCurDistPanel(bpy.types.Panel):
         row.label(text = "Distance to cursor: " + str(x_cur_dist))
 
         row = self.layout.row()
-        row.operator("xutil.cur_dist_button", text="Calc Dist") 
+        row.operator("xutil.cur_dist_button", text="Calc Dist")
+
+        row = self.layout.row()
+        row.label(text = "Edge Length Sum: " + str(x_edge_length_sum))
+
+        row = self.layout.row()
+        row.operator(XEdgeLengthSumOp.bl_idname, text=XEdgeLengthSumOp.bl_label)
+        
 
 # 模组初始化
 classes = (
     XCurDistButton,
+    XEdgeLengthSumOp,
     XCurDistPanel,
 )
 
