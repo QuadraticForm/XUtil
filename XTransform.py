@@ -5,6 +5,12 @@ import copy
 
 x_cur_dist = 0
 
+def active_object_name():
+    if bpy.context.active_object:
+        return bpy.context.active_object.name
+    else:
+        return "None"
+
 # 按钮
 # change parent but keep current local transform (transform relative to current parent)
 # TODO need more testing
@@ -64,7 +70,8 @@ class XTransform(bpy.types.Panel):
             row.label(text = "    " + obj.name)
 
         row = self.layout.row()
-        row.label(text = "Active: " + bpy.context.active_object.name)
+
+        row.label(text = "Active: " + active_object_name())
 
         row = self.layout.row()
         row.operator("xutil.parent_keep_local_button", text="Parent Keep Local") 
