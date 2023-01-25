@@ -56,6 +56,22 @@ class XAnimPanel(bpy.types.Panel):
     def draw(self, context):
 
         row = self.layout.row()
+        row.label(text = "Marker")
+
+        box = self.layout.box()
+
+        row = box.row()
+
+        op = row.operator("screen.marker_jump", text="M←")
+        op.next = False
+        op = row.operator("screen.marker_jump", text="→M")
+        op.next = True
+
+        row = box.row()
+        row.operator("marker.add", text="+")
+        row.operator("marker.delete", text="-")
+
+        row = self.layout.row()
         row.label(text = "Keyframe Transform")
         
 
