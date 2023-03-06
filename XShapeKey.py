@@ -34,26 +34,32 @@ class XDisableAllShapeKeysOp(Operator):
         self.report({'INFO'}, "All Shape Keys disabled")        
         return {'FINISHED'}
 
-def mirror_sk_name(shape_key_name : str):
+def mirror_sk_name(shape_key_name : str) -> str:
     # left
-    if shape_key_name.endswith(".l"):
+    if shape_key_name.endswith(".l") or shape_key_name.endswith("_l"):
         return shape_key_name[0: len(shape_key_name) - 1] + "r"
-    if shape_key_name.endswith("_l"):
-        return shape_key_name[0: len(shape_key_name) - 1] + "r"
-    if shape_key_name.endswith(".L"):
-        return shape_key_name[0: len(shape_key_name) - 1] + "R"
-    if shape_key_name.endswith("_L"):
+    
+    if shape_key_name.endswith(".L") or shape_key_name.endswith("_L"):
         return shape_key_name[0: len(shape_key_name) - 1] + "R"
     
+    if shape_key_name.endswith("left"):
+        return shape_key_name[0: len(shape_key_name) - 4] + "right"
+
+    if shape_key_name.endswith("Left"):
+        return shape_key_name[0: len(shape_key_name) - 4] + "Right"
+    
     # right
-    if shape_key_name.endswith(".r"):
+    if shape_key_name.endswith(".r") or shape_key_name.endswith("_r"):
         return shape_key_name[0: len(shape_key_name) - 1] + "l"
-    if shape_key_name.endswith("_r"):
-        return shape_key_name[0: len(shape_key_name) - 1] + "l"
-    if shape_key_name.endswith(".R"):
+    
+    if shape_key_name.endswith(".R") or shape_key_name.endswith("_R"):
         return shape_key_name[0: len(shape_key_name) - 1] + "L"
-    if shape_key_name.endswith("_R"):
-        return shape_key_name[0: len(shape_key_name) - 1] + "L"
+    
+    if shape_key_name.endswith("right"):
+        return shape_key_name[0: len(shape_key_name) - 5] + "left"
+    
+    if shape_key_name.endswith("Right"):
+        return shape_key_name[0: len(shape_key_name) - 5] + "Left"
     
     #other
     return ""
