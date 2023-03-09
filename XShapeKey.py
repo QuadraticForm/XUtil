@@ -62,7 +62,7 @@ def mirror_sk_name(shape_key_name : str) -> str:
         return shape_key_name[0: len(shape_key_name) - 5] + "Left"
     
     #other
-    return ""
+    return shape_key_name + "_Mirror"
 
 def mirror_sk(topo_mirror : bool) -> bool:
 
