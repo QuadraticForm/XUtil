@@ -102,9 +102,9 @@ def mirror_sk(topo_mirror : bool) -> bool:
 
     return True
 
-class XShapeKeyMirrorToOp(Operator):
-    bl_idname = "xutil_shapekey_tools.mirror_to"
-    bl_label = "Mirror To"
+class XShapeKeyMirrorLeftRightOp(Operator):
+    bl_idname = "xutil_shapekey_tools.mirror_left_right"
+    bl_label = "Mirror Left/Right"
     bl_description = "Mirror the current shape key to the other side"
 
     def execute(self, context):       
@@ -113,9 +113,9 @@ class XShapeKeyMirrorToOp(Operator):
 
         return {'FINISHED'}
     
-class XShapeKeyMirrorToTopoOp(Operator):
-    bl_idname = "xutil_shapekey_tools.mirror_to_topo"
-    bl_label = "Mirror To (Topology)"
+class XShapeKeyMirrorLeftRightTopoOp(Operator):
+    bl_idname = "xutil_shapekey_tools.mirror_left_right_topo"
+    bl_label = "Mirror Left/Right (Topology)"
     bl_description = "Mirror the current shape key to the other side"
 
     def execute(self, context):       
@@ -148,8 +148,8 @@ def draw_ui(self, context):
     row.operator(XDisableAllShapeKeysOp.bl_idname, icon="RESTRICT_VIEW_ON")
 
     row = layout.row(align=True)
-    row.operator(XShapeKeyMirrorToOp.bl_idname, icon="MOD_MIRROR")
-    row.operator(XShapeKeyMirrorToTopoOp.bl_idname, icon="MOD_MIRROR")
+    row.operator(XShapeKeyMirrorLeftRightOp.bl_idname, icon="MOD_MIRROR")
+    row.operator(XShapeKeyMirrorLeftRightTopoOp.bl_idname, icon="MOD_MIRROR")
 
 # -------------------------------------------------------------------
 # register    
@@ -158,8 +158,8 @@ def draw_ui(self, context):
 classes = (
     XEnableAllShapeKeysOp,
     XDisableAllShapeKeysOp,
-    XShapeKeyMirrorToOp,
-    XShapeKeyMirrorToTopoOp
+    XShapeKeyMirrorLeftRightOp,
+    XShapeKeyMirrorLeftRightTopoOp
 )
 
 
