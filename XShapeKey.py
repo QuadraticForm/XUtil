@@ -124,6 +124,41 @@ class XShapeKeyMirrorLeftRightTopoOp(Operator):
 
         return {'FINISHED'}
 
+def set_all_weight(weight : float):
+    # 获取活跃的对象
+    obj = bpy.context.active_object
+
+    # 检查是否有选中的对象，并且该对象是网格对象
+    if obj and obj.type == 'MESH':
+    # 设置所有形状关键帧的权重
+        for shape_key in obj.data.shape_keys.key_blocks:
+            # 这里设置为你想要的权重值
+            shape_key.value = weight
+    else:
+        print("请选中一个网格对象！")   
+
+class XAllShapeKeysToZeroOp(Operator):
+    bl_idname = "xutil_shapekey_tools.all_to_zero"
+    bl_label = "all 0"
+    bl_description = "set all weight to 0"
+
+    def execute(self, context):       
+        for shapekey in context.object.data.shape_keys.key_blocks:
+            shapekey.value = 0
+
+        return {'FINISHED'}
+
+class XAllShapeKeysToOneOp(Operator):
+    bl_idname = "xutil_shapekey_tools.all_to_one"
+    bl_label = "all 1"
+    bl_description = "set all weight to 1"
+
+    def execute(self, context):       
+        for shapekey in context.object.data.shape_keys.key_blocks:
+            shapekey.value = 1
+
+        return {'FINISHED'}
+
 
 # -------------------------------------------------------------------
 #   UI    
@@ -151,6 +186,10 @@ def draw_ui(self, context):
     row.operator(XShapeKeyMirrorLeftRightOp.bl_idname, icon="MOD_MIRROR")
     row.operator(XShapeKeyMirrorLeftRightTopoOp.bl_idname, icon="MOD_MIRROR")
 
+    row = layout.row(align=True)
+    row.operator(XAllShapeKeysToZeroOp.bl_idname)
+    row.operator(XAllShapeKeysToOneOp.bl_idname)
+
 # -------------------------------------------------------------------
 # register    
 # -------------------------------------------------------------------
@@ -159,7 +198,9 @@ classes = (
     XEnableAllShapeKeysOp,
     XDisableAllShapeKeysOp,
     XShapeKeyMirrorLeftRightOp,
-    XShapeKeyMirrorLeftRightTopoOp
+    XShapeKeyMirrorLeftRightTopoOp,
+    XAllShapeKeysToZeroOp,
+    XAllShapeKeysToOneOp
 )
 
 
