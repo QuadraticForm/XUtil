@@ -10,6 +10,49 @@ from bpy.types import Operator
 #   Operators    
 # -------------------------------------------------------------------
 
+class XCopySelectedShapeKeyOp(Operator):
+    bl_idname = "xutil_shapekey_tools.copy_selected"
+    bl_label = "Copy Selected"
+    bl_description = "new name = name + _Copy"
+
+    def execute(self, context):       
+        copy_sk()
+
+        self.report({'INFO'}, "Copied")     
+        return {'FINISHED'}
+    
+def copy_sk() -> bool:
+
+    # 0. get current shape key info
+
+    obj = bpy.context.active_object
+    this_sk = obj.active_shape_key
+    this_obj_data : bpy.types.Mesh = obj.data
+    shape_keys = this_obj_data.shape_keys.key_blocks
+
+    # 1. determine new name
+
+    new_name = this_sk.name + "_Copy"
+
+    # 2. reset other side shape key, and set active
+
+    other_sk = shape_keys.get(new_name)
+    if other_sk:
+        obj.shape_key_remove(other_sk)
+    other_sk = obj.shape_key_add(name=new_name, from_mix=False)
+
+    obj.active_shape_key_index = len(shape_keys) - 1
+
+    # 3. make other side shape key == this shape key
+
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.blend_from_shape(shape=this_sk.name, blend=1.0, add=False)
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+    return True
+
+
 class XEnableAllShapeKeysOp(Operator):
     bl_idname = "xutil_shapekey_tools.enable_all"
     bl_label = "Enable All"
@@ -179,6 +222,9 @@ def draw_ui(self, context):
     row.label(text="XUtil Shape Key Tools:")
 
     row = layout.row(align=True)
+    row.operator(XCopySelectedShapeKeyOp.bl_idname)
+
+    row = layout.row(align=True)
     row.operator(XEnableAllShapeKeysOp.bl_idname, icon="RESTRICT_VIEW_OFF")
     row.operator(XDisableAllShapeKeysOp.bl_idname, icon="RESTRICT_VIEW_ON")
 
@@ -195,6 +241,7 @@ def draw_ui(self, context):
 # -------------------------------------------------------------------
 
 classes = (
+    XCopySelectedShapeKeyOp,
     XEnableAllShapeKeysOp,
     XDisableAllShapeKeysOp,
     XShapeKeyMirrorLeftRightOp,
